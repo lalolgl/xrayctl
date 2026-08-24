@@ -1,0 +1,10 @@
+/target/
+
+*.log
+
+# xrayctl runtime data
+subscription.json
+active.json
+xray.json
+xray.pid
+config.toml
