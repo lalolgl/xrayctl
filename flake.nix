@@ -1,39 +1,68 @@
 {
-  description = "Xray subscription and profile management CLI";
+  description = "A command-line manager for Xray subscriptions and connections";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
-  outputs =
-    { nixpkgs, ... }:
+  outputs = { self, nixpkgs }:
     let
-      system = "x86_64-linux";
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
 
-      pkgs = import nixpkgs {
-        inherit system;
-      };
-    in
-    {
-      packages.${system}.default = pkgs.rustPlatform.buildRustPackage {
-        pname = "xrayctl";
-        version = "0.1.0";
+      forAllSystems = nixpkgs.lib.genAttrs systems;
 
-        src = ./.;
+    in {
+      packages = forAllSystems (system:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+          };
+        in {
+          default = pkgs.rustPlatform.buildRustPackage {
+            pname = "xrayctl";
+            version = "0.1.0";
 
-        cargoLock = {
-          lockFile = ./Cargo.lock;
-        };
-      };
+            src = ./.;
 
-      devShells.${system}.default = pkgs.mkShell {
-        packages = with pkgs; [
-          rustc
-          cargo
-          gcc
-          rustfmt
-          clippy
-        ];
-      };
+            cargoLock = {
+              lockFile = ./Cargo.lock;
+            };
+
+            nativeBuildInputs = [
+              pkgs.makeWrapper
+            ];
+
+            postFixup = ''
+              wrapProgram $out/bin/xrayctl \
+                --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.xray ]}
+            '';
+
+            meta = {
+              description = "A command-line manager for Xray subscriptions and connections";
+              homepage = "https://github.com/lalolgl/xrayctl";
+              license = pkgs.lib.licenses.mit;
+              mainProgram = "xrayctl";
+            };
+          };
+        });
+
+      devShells = forAllSystems (system:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+          };
+        in {
+          default = pkgs.mkShell {
+            packages = with pkgs; [
+              rustc
+              cargo
+              rustfmt
+              clippy
+            ];
+          };
+        });
     };
 }
