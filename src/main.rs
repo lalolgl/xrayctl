@@ -11,7 +11,7 @@ struct Config {
 }
 
 fn get_proxy_address(config: &serde_json::Value) -> Result<String, String> {
-    config
+    let proxy = config
         .get("outbounds")
         .and_then(|value| value.as_array())
         .and_then(|outbounds| {
@@ -19,11 +19,29 @@ fn get_proxy_address(config: &serde_json::Value) -> Result<String, String> {
                 outbound.get("tag").and_then(|value| value.as_str()) == Some("proxy")
             })
         })
-        .and_then(|proxy| proxy.get("settings"))
-        .and_then(|settings| settings.get("address"))
-        .and_then(|address| address.as_str())
-        .map(String::from)
-        .ok_or_else(|| "Proxy address not found".to_string())
+        .ok_or_else(|| "Proxy outbound not found".to_string())?;
+
+    let settings = proxy
+        .get("settings")
+        .ok_or_else(|| "Proxy settings not found".to_string())?;
+
+    // Hysteria
+    if let Some(address) = settings.get("address").and_then(|value| value.as_str()) {
+        return Ok(address.to_string());
+    }
+
+    // VLESS
+    if let Some(address) = settings
+        .get("vnext")
+        .and_then(|value| value.as_array())
+        .and_then(|vnext| vnext.first())
+        .and_then(|server| server.get("address"))
+        .and_then(|value| value.as_str())
+    {
+        return Ok(address.to_string());
+    }
+
+    Err("Proxy address not found".to_string())
 }
 
 fn resolve_proxy_address(address: &str) -> Result<String, String> {
@@ -920,7 +938,7 @@ fn main() {
                     ui::separator();
 
                     ui::field("Profile", &remarks);
-                    ui::field("Protocol", &protocol);
+                    ui::field("Protocol", protocol);
 
                     if let Some(inbounds) = config
                         .get_mut("inbounds")
