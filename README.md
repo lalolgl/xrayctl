@@ -373,11 +373,3 @@ cargo test
 * [ ] Automated integration tests
 * [ ] Improved configuration validation
 * [ ] Performance optimizations
-
-> 💡 The current priority is stability and a clean project foundation. More advanced networking and performance improvements can be introduced in future versions.
-
----
-
-<p align="center">
-  <sub>Built with 🦀 Rust and ❤️ for the Xray ecosystem.</sub>
-</p>
