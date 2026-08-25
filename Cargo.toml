@@ -2,6 +2,13 @@
 name = "xrayctl"
 version = "0.1.0"
 edition = "2024"
+description = "A command-line manager for Xray subscriptions and connections"
+license = "MIT"
+repository = "https://github.com/lalolgl/xrayctl"
+homepage = "https://github.com/lalolgl/xrayctl"
+readme = "README.md"
+keywords = ["xray", "vpn", "proxy", "vless", "hysteria"]
+categories = ["command-line-utilities", "network-programming"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
