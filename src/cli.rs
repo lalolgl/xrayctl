@@ -116,4 +116,7 @@ pub enum SubscriptionCommand {
 
     #[command(about = "Update subscription")]
     Update,
+
+    #[command(about = "Ping all available profiles")]
+    Ping,
 }

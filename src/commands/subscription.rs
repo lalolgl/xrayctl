@@ -6,6 +6,7 @@ use crate::subscription_client;
 use crate::ui;
 use crate::xray;
 use std::process::Command;
+use std::time::Duration;
 
 pub fn run(command: Option<SubscriptionCommand>) {
     match command {
@@ -878,6 +879,117 @@ pub fn run(command: Option<SubscriptionCommand>) {
             println!("Subscription saved:");
             println!("{}", subscription_file.display());
         }
+        Some(SubscriptionCommand::Ping) => {
+            let subscription_file = match config::subscription_file() {
+                Ok(path) => path,
+                Err(error) => {
+                    println!("Failed to get subscription file: {error}");
+                    return;
+                }
+            };
+
+            let content = match std::fs::read_to_string(&subscription_file) {
+                Ok(content) => content,
+                Err(error) => {
+                    println!("Failed to read subscription: {error}");
+                    return;
+                }
+            };
+
+            let subscription: serde_json::Value = match serde_json::from_str(&content) {
+                Ok(json) => json,
+                Err(error) => {
+                    println!("Failed to parse subscription: {error}");
+                    return;
+                }
+            };
+
+            let profiles = match subscription.as_array() {
+                Some(profiles) => profiles,
+                None => {
+                    println!("Subscription is not an array");
+                    return;
+                }
+            };
+
+            println!("Server connectivity");
+            println!("────────────────────────────────");
+
+            let timeout = Duration::from_secs(5);
+
+            let mut profile_number = 0;
+            let mut available = 0;
+
+            for profile in profiles {
+                let remarks = profile
+                    .get("remarks")
+                    .and_then(|value| value.as_str())
+                    .unwrap_or("Unnamed");
+
+                if remarks.starts_with("⬣↓") {
+                    continue;
+                }
+
+                profile_number += 1;
+
+                let protocol = subscription::get_protocol(profile);
+
+                let address = match subscription::get_proxy_address(profile) {
+                    Ok(address) => address,
+                    Err(error) => {
+                        println!();
+                        println!("{}. {}", profile_number, remarks);
+                        println!("   Protocol: {}", protocol);
+                        println!("   Status:   Unavailable");
+                        println!("   Error:    {}", error);
+                        continue;
+                    }
+                };
+
+                let port = match subscription::get_proxy_port(profile) {
+                    Ok(port) => port,
+                    Err(error) => {
+                        println!();
+                        println!("{}. {}", profile_number, remarks);
+                        println!("   Protocol: {}", protocol);
+                        println!("   Address:  {}", address);
+                        println!("   Status:   Unavailable");
+                        println!("   Error:    {}", error);
+                        continue;
+                    }
+                };
+
+                println!();
+                println!("{}. {}", profile_number, remarks);
+                println!("   Protocol: {}", protocol);
+                println!("   Address:  {}:{}", address, port);
+
+                let result = crate::ping::ping(&address, port, timeout);
+
+                match result.latency {
+                    Some(latency) => {
+                        available += 1;
+
+                        println!("   Latency:  {} ms", latency.as_millis());
+                        println!("   Status:   Available");
+                    }
+
+                    None => {
+                        println!("   Latency:  timeout");
+                        println!("   Status:   Unavailable");
+
+                        if let Some(error) = result.error {
+                            println!("   Error:    {}", error);
+                        }
+                    }
+                }
+            }
+
+            println!();
+            println!("────────────────────────────────");
+            println!("Available: {}/{}", available, profile_number);
+        }
+
         None => {
             println!("No subscription command specified.");
         }

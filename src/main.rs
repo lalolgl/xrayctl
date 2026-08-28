@@ -3,6 +3,7 @@ use clap::Parser;
 mod cli;
 mod commands;
 mod config;
+mod ping;
 mod subscription;
 mod subscription_client;
 mod ui;
