@@ -38,7 +38,7 @@ Currently tested with:
 * ⚡ Hysteria 2
 * 🔒 VLESS + Reality + XHTTP
 
-More protocols may be supported in the future.
+Other protocols may work depending on the subscription and generated Xray configuration, but have not been fully tested yet.
 
 ---
 
@@ -143,21 +143,21 @@ Example:
 Profiles
 ────────────────────────
 
-Finland
+Hysteria 2
 ────────────────────────
 1. 🇫🇮 Finland
    Protocol: hysteria
-   Group: Finland
+   Group: Hysteria 2
 
-2. 🇫🇮 Finland
-   Protocol: vless
-   Group: Finland
+2. 🇩🇪 Germany
+   Protocol: hysteria
+   Group: Hysteria 2
 
-Germany
+VLESS Secure
 ────────────────────────
-3. 🇩🇪 Germany
+3. 🇫🇮 Finland
    Protocol: vless
-   Group: Germany
+   Group: VLESS Secure
 
 Total profiles: 3
 ```
@@ -197,6 +197,7 @@ Example:
 ```text
 Xray
 ────────────────────────────────
+
 ● Running
 
   PID        12345
@@ -265,12 +266,13 @@ Address:   10.10.0.1/30
 
 When Xray starts, `xrayctl`:
 
-* creates the required routing configuration;
 * preserves the route to the remote Xray server through the original uplink;
 * configures the Xray TUN interface;
 * replaces the system default route with the TUN route.
 
 This allows supported traffic to be routed through Xray without configuring every application individually.
+
+> ⚠️ TUN mode modifies the system routing table and requires `sudo`.
 
 ---
 
@@ -330,6 +332,18 @@ Run directly with Cargo:
 cargo run -- sub list
 ```
 
+Check formatting:
+
+```bash
+cargo fmt -- --check
+```
+
+Check the project:
+
+```bash
+cargo check
+```
+
 Build a release:
 
 ```bash
@@ -346,10 +360,12 @@ cargo test
 
 ## 🗺️ Roadmap
 
-### v0.1
+### v0.1.1
 
 * [x] Subscription management
+* [x] Subscription information
 * [x] Profile listing
+* [x] Profile inspection
 * [x] Profile selection
 * [x] Xray configuration generation
 * [x] Configuration validation
@@ -357,11 +373,13 @@ cargo test
 * [x] VLESS support
 * [x] TUN routing
 * [x] Start / stop / status
+* [x] PID management
+* [x] Local SOCKS5 proxy
 * [x] Basic CLI interface
 
 ### Future releases
 
-* [ ] Refactor the project architecture
+* [ ] Refine the project architecture
 * [ ] Improve error handling
 * [ ] Improve TUN lifecycle management
 * [ ] Graceful shutdown and cleanup
@@ -373,3 +391,10 @@ cargo test
 * [ ] Automated integration tests
 * [ ] Improved configuration validation
 * [ ] Performance optimizations
+* [ ] Prebuilt binaries
+
+---
+
+## 📄 License
+
+See [LICENSE](LICENSE).
