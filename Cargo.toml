@@ -1,6 +1,6 @@
 [package]
 name = "xrayctl"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "A command-line manager for Xray subscriptions and connections"
 license = "MIT"
