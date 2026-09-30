@@ -160,7 +160,7 @@ pub fn prepare_xray_config(mut config: serde_json::Value) -> Result<serde_json::
                 "gateway": [
                     "10.10.0.1/30"
                 ],
-                "autoSystemRoutingTable": true,
+                "autoSystemRoutingTable": [],
                 "autoOutboundsInterface": "auto"
             },
             "sniffing": {
